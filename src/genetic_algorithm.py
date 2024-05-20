@@ -1,8 +1,10 @@
 import random
 import sys
+
 sys.path.append('../music/')
 import muser as ms
 import building_blocks as bb
+
 
 class GeneticAlgorithm:
     def __init__(self, population_size, generations, mutation_rate, individual_length):
@@ -52,31 +54,56 @@ class GeneticAlgorithm:
         Returns:
             int: A fitness score indicating the quality of the composition.
         """
+        # Initialize fitness components
         duration_variety = len(set(duration for _, duration in composition))
         note_variety = len(set(note for note, _ in composition))
         note_scale_matches = sum(note[:-1] in bb.g_minor_scale for note, _ in composition)
         rhythmic_diversity = len(set(duration for _, duration in composition))
         repetition_penalty = -sum(composition[i] == composition[i + 1] for i in range(len(composition) - 1))
 
+        # Calculate ending bonus
         ending_notes = [note[:-1] for block in bb.building_blocks[-4:] for note, _ in block]
         ending_bonus = sum(1 for note, _ in composition[-len(ending_notes):] if note in ending_notes)
 
-        return duration_variety + note_variety + note_scale_matches + rhythmic_diversity + repetition_penalty + ending_bonus
+        # Enhance ending quality
+        ending_quality = sum(1 for end_block in bb.building_blocks[-4:] if end_block[-4:] == composition[-4:])
+        ending_bonus += ending_quality * 2  # Give more weight to matching endings
+
+        # reward sequences
+        sequence_bonus = 0
+        for i in range(len(composition) - 2):
+            if composition[i:i + 3] in bb.building_blocks:
+                sequence_bonus += 1
+
+        # Combine fitness components with weights based on importance
+        fitness_score = (
+            duration_variety * 1 + 
+            note_variety * 1 + 
+            note_scale_matches * 2 + 
+            rhythmic_diversity * 1 + 
+            repetition_penalty * (-1) + 
+            ending_bonus * 2 +
+            sequence_bonus * 3
+        )
+
+        return fitness_score
+
 
     def selection(self, population, fitnesses):
         """
-        Selects the two best individuals from the population based on their fitness scores.
+        Selects the best individuals from the population based on their fitness scores.
 
         Args:
             population (list): The current population of individuals.
             fitnesses (list): The fitness scores of the individuals in the population.
 
         Returns:
-            list: A list of the two best individuals.
+            list: A list of the best individuals.
         """
-        best_indices = sorted(range(len(fitnesses)), key=lambda i: fitnesses[i], reverse=True)[:2]
+        # Select the top 10% of individuals
+        best_indices = sorted(range(len(fitnesses)), key=lambda i: fitnesses[i], reverse=True)[:int(0.1 * self.population_size)]
         return [population[i] for i in best_indices]
-    
+
     def crossover(self, parent1, parent2):
         """
         Performs crossover between two parent compositions to produce two offspring.
@@ -88,9 +115,15 @@ class GeneticAlgorithm:
         Returns:
             tuple: Two new compositions created by combining parts of the parents.
         """
-        crossover_point = random.randint(1, len(parent1) - 1)
-        child1 = parent1[:crossover_point] + parent2[crossover_point:]
-        child2 = parent2[:crossover_point] + parent1[crossover_point:]
+        if random.random() < 0.6:
+            # Choose crossover points
+            index1, index2, index3, index4 = sorted(random.sample(range(len(parent1)), 4))
+            # Create offspring by swapping sections of parents
+            child1 = parent1[:index1] + parent2[index1:index2] + parent1[index2:index3] + parent2[index3:index4] + parent1[index4:]
+            child2 = parent2[:index1] + parent1[index1:index2] + parent2[index2:index3] + parent1[index3:index4] + parent2[index4:]
+        else:
+            # If crossover doesn't occur, offspring are identical to parents
+            child1, child2 = parent1, parent2
         return child1, child2
 
     def mutate(self, composition):
@@ -103,14 +136,11 @@ class GeneticAlgorithm:
         Returns:
             list: The mutated composition.
         """
-        
         if random.random() < self.mutation_rate:
+            # Choose a random note in the composition to mutate
             index = random.randint(0, len(composition) - 1)
+            # Mutate the chosen note by replacing it with a random note
             composition[index] = (random.choice(bb.notes), random.choice(bb.durations))
-        if random.random() < self.mutation_rate:
-            block = random.choice(bb.building_blocks)
-            index = random.randint(0, len(composition) - len(block))
-            composition[index:index+len(block)] = block
         return composition
 
     def run(self):
@@ -124,20 +154,23 @@ class GeneticAlgorithm:
         fitnesses_list = []
 
         for generation in range(self.generations):
+            # Evaluate fitness of each individual in the population
             fitnesses = [self.fitness(composition) for composition in population]
-
-            new_population = []
-            while len(new_population) < self.population_size:
-                parents = self.selection(population, fitnesses)
-                offspring = self.crossover(*parents)
-                new_population.extend(self.mutate(child) for child in offspring)
-
-            population = new_population[:self.population_size]
-
+            # Track best fitness for this generation
             best_fitness = max(fitnesses)
             fitnesses_list.append(best_fitness)
             print(f'Generation {generation + 1}, Best Fitness: {best_fitness}')
+            # Select the best individuals from the population
+            new_population = self.selection(population, fitnesses)
+            # Generate new individuals through crossover and mutation
+            while len(new_population) < self.population_size:
+                parent1, parent2 = random.choices(population, weights=fitnesses, k=2)
+                child1, child2 = self.crossover(parent1, parent2)
+                new_population.extend([self.mutate(child1), self.mutate(child2)])
+            # Update population for next generation
+            population = new_population[:self.population_size]
 
+        # Retrieve the best composition found
         best_composition = population[fitnesses.index(max(fitnesses))]
         # Generate bass composition for more tasteful results
         bass_composition = [(note[:-1] + "2", duration) for note, duration in best_composition]
