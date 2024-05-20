@@ -54,7 +54,7 @@ class GeneticAlgorithm:
         """
         duration_variety = len(set(duration for _, duration in composition))
         note_variety = len(set(note for note, _ in composition))
-        note_scale_matches = sum(note[:-1] in bb.c_major_scale for note, _ in composition)
+        note_scale_matches = sum(note[:-1] in bb.g_minor_scale for note, _ in composition)
         rhythmic_diversity = len(set(duration for _, duration in composition))
         repetition_penalty = -sum(composition[i] == composition[i + 1] for i in range(len(composition) - 1))
 

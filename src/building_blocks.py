@@ -2,7 +2,6 @@ notes = ['a4', 'b4', 'c4', 'd4', 'e4', 'f4', 'g4']
 durations = [1, 2, 4, 8]
 
 g_minor_scale = ['g', 'a', 'a#', 'c', 'd', 'd#', 'f']
-c_major_scale = ['c', 'd', 'e', 'f', 'g', 'a', 'b']
 
 building_blocks = [
     # Beethoven's fragments
@@ -37,9 +36,13 @@ building_blocks = [
 
     # Chopin's fragments
     (('c#4', 8), ('e4', 8), ('g#4', 8), ('c#5', 8), ('g#4', 8), ('e4', 8)),  # Chopin's Revolutionary Étude
+    (('c#4', 8), ('e4', 8), ('g#4', 8), ('c#5', 8), ('g#4', 8), ('e4', 8)),
     (('e4', 8), ('g#4', 8), ('b4', 8), ('e5', 8), ('b4', 8), ('g#4', 8)),  # Chopin's Nocturne Op. 9 No. 2
+    (('e4', 8), ('g#4', 8), ('b4', 8), ('e5', 8), ('b4', 8), ('g#4', 8)),
     (('c#3', 8), ('e3', 8), ('g#3', 8), ('c#4', 8), ('g#3', 8), ('e3', 8)),  # Chopin's Étude Op. 10 No. 4
+    (('c#3', 8), ('e3', 8), ('g#3', 8), ('c#4', 8), ('g#3', 8), ('e3', 8)),
     (('e5', 8), ('g#5', 8), ('b5', 8), ('e6', 8), ('b5', 8), ('g#5', 8)),   # Chopin's Ballade No. 1 in G minor
+    (('e5', 8), ('g#5', 8), ('b5', 8), ('e6', 8), ('b5', 8), ('g#5', 8)),
 
     # Beethoven endings
     (('c4', 8), ('d4', 8), ('e4', 8), ('f4', 8), ('g4', 8), ('a4', 8), ('b4', 8), ('c5', 8), ('d5', 8), ('e5', 8), ('f5', 8), ('g5', 8)),  # Beethoven's Ode to Joy ending
