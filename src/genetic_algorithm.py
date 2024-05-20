@@ -121,6 +121,7 @@ class GeneticAlgorithm:
             tuple: The best composition found and its corresponding bass composition.
         """
         population = self.initialize_population()
+        fitnesses_list = []
 
         for generation in range(self.generations):
             fitnesses = [self.fitness(composition) for composition in population]
@@ -134,9 +135,10 @@ class GeneticAlgorithm:
             population = new_population[:self.population_size]
 
             best_fitness = max(fitnesses)
+            fitnesses_list.append(best_fitness)
             print(f'Generation {generation + 1}, Best Fitness: {best_fitness}')
 
         best_composition = population[fitnesses.index(max(fitnesses))]
         # Generate bass composition for more tasteful results
         bass_composition = [(note[:-1] + "2", duration) for note, duration in best_composition]
-        return best_composition, bass_composition
+        return best_composition, bass_composition, fitnesses_list
